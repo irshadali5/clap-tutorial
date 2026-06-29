@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>clap — The Complete Tutorial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --surface2: #1c2128;
+    --border:   #30363d;
+    --accent:   #3fb950;
+    --accent2:  #238636;
+    --danger:   #f85149;
+    --warn:     #d29922;
+    --info:     #388bfd;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --dim:      #484f58;
+    --mono:     'JetBrains Mono', monospace;
+    --sidebar:  260px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--mono);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .sidebar-header {
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+
+  .sidebar-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .sidebar-logo span { color: var(--muted); font-weight: 300; }
+
+  .sidebar-tagline {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .sidebar-version {
+    display: inline-block;
+    font-size: 10px;
+    background: var(--accent2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-top: 6px;
+  }
+
+  .nav-section {
+    padding: 10px 0 4px;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 18px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 6px 18px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(63,185,80,0.06);
+  }
+
+  .nav-item .nav-badge {
+    float: right;
+    font-size: 9px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--dim);
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar);
+    flex: 1;
+    max-width: 860px;
+    padding: 48px 52px 120px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 72px;
+    scroll-margin-top: 24px;
+  }
+
+  .section-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    margin-top: 48px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+  }
+  h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 10px;
+  }
+
+  p {
+    color: var(--muted);
+    margin-bottom: 16px;
+    max-width: 680px;
+  }
+
+  strong { color: var(--text); font-weight: 600; }
+  code { color: var(--accent); font-family: var(--mono); font-size: 13px; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-size: 11px;
+    color: var(--dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .code-filename {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .code-copy {
+    font-size: 11px;
+    color: var(--dim);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-family: var(--mono);
+    transition: all 0.15s;
+  }
+  .code-copy:hover { color: var(--text); border-color: var(--muted); }
+  .code-copy.copied { color: var(--accent); border-color: var(--accent); }
+
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    tab-size: 4;
+  }
+
+  /* syntax colors */
+  .kw  { color: #ff7b72; }   /* keywords: fn, struct, use, impl, pub, let */
+  .ty  { color: #ffa657; }   /* types: String, bool, u32, Vec, Option */
+  .st  { color: #a5d6ff; }   /* strings */
+  .cm  { color: #8b949e; font-style: italic; } /* comments */
+  .at  { color: #e3b341; }   /* attributes #[...] */
+  .nu  { color: #79c0ff; }   /* numbers */
+  .mc  { color: #d2a8ff; }   /* macros */
+  .fn_ { color: #d2a8ff; }   /* function calls */
+  .lf  { color: var(--accent); } /* lifetime */
+  .op  { color: var(--muted); }  /* operators/punctuation */
+
+  /* ── TERMINAL BLOCK ── */
+  .term {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .term .prompt { color: var(--accent); }
+  .term .cmd { color: var(--text); }
+  .term .out { color: var(--muted); }
+  .term .err { color: var(--danger); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-left: 3px solid;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .callout.tip   { border-color: var(--accent); background: rgba(63,185,80,0.06); }
+  .callout.warn  { border-color: var(--warn);   background: rgba(210,153,34,0.06); }
+  .callout.info  { border-color: var(--info);   background: rgba(56,139,253,0.06); }
+  .callout.danger{ border-color: var(--danger); background: rgba(248,81,73,0.06); }
+
+  .callout-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .callout.tip   .callout-label { color: var(--accent); }
+  .callout.warn  .callout-label { color: var(--warn); }
+  .callout.info  .callout-label { color: var(--info); }
+  .callout.danger .callout-label { color: var(--danger); }
+
+  .callout p { margin: 0; color: var(--text); font-size: 13px; }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 8px 14px;
+    background: var(--surface2);
+    color: var(--text);
+    font-weight: 600;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+  }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── VISUALIZER ── */
+  .visualizer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 24px 0;
+  }
+
+  .viz-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  .viz-grid {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+
+  .viz-input {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    color: var(--text);
+  }
+
+  .viz-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 10px;
+    color: var(--accent);
+    font-size: 18px;
+  }
+
+  .viz-output {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .viz-field { margin-bottom: 6px; }
+  .viz-field-name { color: var(--accent); }
+  .viz-field-val  { color: var(--text); }
+  .viz-field-type { color: var(--muted); font-size: 11px; }
+
+  /* ── COMPARISON ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .compare-col { }
+  .compare-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    border-radius: 6px 6px 0 0;
+  }
+  .compare-label.derive { background: rgba(63,185,80,0.15); color: var(--accent); }
+  .compare-label.builder { background: rgba(56,139,253,0.15); color: var(--info); }
+  .compare .code-block { margin: 0; border-radius: 0 0 6px 6px; }
+
+  /* ── PILL TAGS ── */
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 2px 7px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .tag.beginner   { background: rgba(63,185,80,0.15);  color: var(--accent); border: 1px solid rgba(63,185,80,0.3); }
+  .tag.advanced   { background: rgba(248,81,73,0.15);  color: var(--danger); border: 1px solid rgba(248,81,73,0.3); }
+  .tag.important  { background: rgba(210,153,34,0.15); color: var(--warn);   border: 1px solid rgba(210,153,34,0.3); }
+
+  /* ── SEPARATOR ── */
+  .sep { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── HERO ── */
+  .hero {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 40px;
+    margin-bottom: 0;
+  }
+
+  .hero-ascii {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--accent);
+    opacity: 0.7;
+    margin-bottom: 24px;
+    white-space: pre;
+  }
+
+  /* toc progress */
+  .toc-progress {
+    height: 2px;
+    background: var(--border);
+    margin: 0 18px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .toc-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  @media (max-width: 860px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; padding: 24px 20px 80px; }
+    .compare { grid-template-columns: 1fr; }
+    .viz-grid { grid-template-columns: 1fr; }
+    .viz-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">clap<span>.rs</span></div>
+    <div class="sidebar-tagline">Command Line Argument Parser for Rust</div>
+    <div class="sidebar-version">v4.x — derive API</div>
+  </div>
+  <div class="toc-progress"><div class="toc-progress-bar" id="progressBar"></div></div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Getting Started</div>
+    <a href="#intro"       class="nav-item active">What is clap?</a>
+    <a href="#install"     class="nav-item">Installation</a>
+    <a href="#first"       class="nav-item">First Program</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Core Concepts</div>
+    <a href="#derive-vs-builder" class="nav-item">Derive vs Builder</a>
+    <a href="#args"        class="nav-item">Arguments <span class="nav-badge">key</span></a>
+    <a href="#options"     class="nav-item">Options &amp; Flags</a>
+    <a href="#types"       class="nav-item">Parsing Types</a>
+    <a href="#required"    class="nav-item">Required &amp; Optional</a>
+    <a href="#defaults"    class="nav-item">Default Values</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Subcommands</div>
+    <a href="#subcommands" class="nav-item">Subcommands <span class="nav-badge">key</span></a>
+    <a href="#subcommand-required" class="nav-item">Required Subcommands</a>
+    <a href="#global-args" class="nav-item">Global Args</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Validation</div>
+    <a href="#validation"  class="nav-item">Built-in Validation</a>
+    <a href="#custom-val"  class="nav-item">Custom Validators</a>
+    <a href="#conflicts"   class="nav-item">Conflicts &amp; Requires</a>
+    <a href="#value-enum"  class="nav-item">ValueEnum</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Advanced</div>
+    <a href="#env-vars"    class="nav-item">Env Variables</a>
+    <a href="#config-file" class="nav-item">Config Files</a>
+    <a href="#multiple"    class="nav-item">Multiple Values</a>
+    <a href="#groups"      class="nav-item">Argument Groups</a>
+    <a href="#help"        class="nav-item">Custom Help &amp; Version</a>
+    <a href="#errors"      class="nav-item">Error Handling</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Reference</div>
+    <a href="#cheatsheet"  class="nav-item">Cheatsheet</a>
+    <a href="#patterns"    class="nav-item">Real-world Patterns</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- ═══════════════════════════════════ INTRO -->
+  <section class="section hero" id="intro">
+    <div class="hero-ascii">
+ ██████╗██╗      █████╗ ██████╗ 
+██╔════╝██║     ██╔══██╗██╔══██╗
+██║     ██║     ███████║██████╔╝
+██║     ██║     ██╔══██║██╔═══╝ 
+╚██████╗███████╗██║  ██║██║     
+ ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝     </div>
+
+    <div class="section-eyebrow">Chapter 0 — Introduction</div>
+    <h1>clap: Command Line Argument Parser</h1>
+    <p>
+      <code>clap</code> is the de-facto standard crate for building CLIs in Rust.
+      It parses <strong>arguments, options, flags, and subcommands</strong> from
+      <code>std::env::args()</code>, generates <strong>help/version output</strong>
+      automatically, and validates input — all with zero boilerplate when you use the
+      derive macro.
+    </p>
+    <p>
+      This tutorial teaches from first principles. Every concept builds on the previous one.
+      You will not need external docs for the core 95% of clap usage.
+    </p>
+
+    <div class="callout info">
+      <div class="callout-label">Prerequisites</div>
+      <p>You need Rust installed (<code>rustup</code>), basic familiarity with
+      structs and enums, and the ability to run <code>cargo new</code>. That's it.</p>
+    </div>
+
+    <!-- MENTAL MODEL visualizer -->
+    <div class="visualizer">
+      <div class="viz-title">↯ Mental model — what clap does</div>
+      <div class="viz-grid">
+        <div class="viz-input">
+          <div style="color:var(--muted);font-size:11px;margin-bottom:8px;">$ your-cli --name irshad -v 3 search foo</div>
+          <div style="color:var(--accent);">--name irshad</div>
+          <div style="color:var(--info);">-v 3</div>
+          <div style="color:var(--warn);">search</div>
+          <div style="color:var(--text);">foo</div>
+        </div>
+        <div class="viz-arrow">→</div>
+        <div class="viz-output">
+          <div class="viz-field">
+            <span class="viz-field-name">name</span><span class="viz-field-type"> : String</span><br/>
+            <span class="viz-field-val">&nbsp;&nbsp;"irshad"</span>
+          </div>
+          <div class="viz-field">
+            <span class="viz-field-name">verbosity</span><span class="viz-field-type"> : u8</span><br/>
+            <span class="viz-field-val">&nbsp;&nbsp;3</span>
+          </div>
+          <div class="viz-field">
+            <span class="viz-field-name">command</span><span class="viz-field-type"> : Commands</span><br/>
+            <span class="viz-field-val">&nbsp;&nbsp;Search { query: "foo" }</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ INSTALL -->
+  <section class="section" id="install">
+    <div class="section-eyebrow">Chapter 1</div>
+    <h2>Installation</h2>
+
+    <p>Add clap to your <code>Cargo.toml</code>. Always enable the <code>derive</code> feature — it's how you'll write clap in 2024.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">toml</span>
+        <span class="code-filename">Cargo.toml</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="op">[</span>dependencies<span class="op">]</span>
+<span class="kw">clap</span> = <span class="op">{</span> version = <span class="st">"4"</span><span class="op">,</span> features = <span class="op">[</span><span class="st">"derive"</span><span class="op">]</span> <span class="op">}</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Feature flags</div>
+      <p>You can also add <code>"env"</code> (for reading env vars), <code>"wrap_help"</code>
+      (word-wraps help text), and <code>"unicode"</code>. We'll cover these when we need them.</p>
+    </div>
+
+    <p>Verify everything compiles:</p>
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">cargo build</span><br/>
+      <span class="out">   Compiling clap v4.x.x</span><br/>
+      <span class="out">   Compiling your-cli v0.1.0</span><br/>
+      <span class="out">    Finished dev [unoptimized + debuginfo] target(s) in 3.2s</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ FIRST PROGRAM -->
+  <section class="section" id="first">
+    <div class="section-eyebrow">Chapter 2</div>
+    <h2>Your First clap Program</h2>
+
+    <p>
+      The derive approach: you define a <strong>struct</strong> and annotate it with
+      <code>#[derive(Parser)]</code>. clap reads those annotations and builds the
+      entire parser from your struct's shape.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">rust</span>
+        <span class="code-filename">src/main.rs</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="kw">use</span> clap<span class="op">::</span><span class="ty">Parser</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser, Debug)]</span>
+<span class="at">#[command(name = "greet", about = "A greeting CLI")]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Name of the person to greet</span>
+    name<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> args <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="mc">println!</span><span class="op">(</span><span class="st">"Hello, {}!"</span><span class="op">,</span> args.name<span class="op">);</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">cargo run -- irshad</span><br/>
+      <span class="out">Hello, irshad!</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">cargo run -- --help</span><br/>
+      <span class="out">A greeting CLI</span><br/>
+      <br/>
+      <span class="out">Usage: greet &lt;NAME&gt;</span><br/>
+      <br/>
+      <span class="out">Arguments:</span><br/>
+      <span class="out">  &lt;NAME&gt;  Name of the person to greet</span><br/>
+      <br/>
+      <span class="out">Options:</span><br/>
+      <span class="out">  -h, --help     Print help</span><br/>
+      <span class="out">  -V, --version  Print version</span>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Key insight</div>
+      <p>The <code>/// doc comment</code> on each field becomes the help text automatically.
+      This is not magic — clap's proc macro reads it at compile time. Always write doc comments on your fields.</p>
+    </div>
+
+    <h3>What just happened?</h3>
+    <p>Three things the macro wired up for you:</p>
+    <table>
+      <tr><th>You wrote</th><th>clap did</th></tr>
+      <tr><td><code>struct Cli { name: String }</code></td><td>Registered a positional argument called NAME</td></tr>
+      <tr><td><code>#[command(about = "...")]</code></td><td>Set the help description line</td></tr>
+      <tr><td><code>Cli::parse()</code></td><td>Parsed argv, validated types, printed errors &amp; exited on failure</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════ DERIVE VS BUILDER -->
+  <section class="section" id="derive-vs-builder">
+    <div class="section-eyebrow">Chapter 3</div>
+    <h2>Derive API vs Builder API</h2>
+
+    <p>clap has two APIs. <strong>Always use Derive</strong> unless you have a compelling reason not to.</p>
+
+    <div class="compare">
+      <div class="compare-col">
+        <div class="compare-label derive">✓ Derive API (recommended)</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">rust</span></div>
+          <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+  <span class="cm">/// Port number</span>
+  <span class="at">#[arg(short, long, default_value_t = 8080)]</span>
+  port<span class="op">:</span> <span class="ty">u16</span><span class="op">,</span>
+<span class="op">}</span></pre>
+        </div>
+      </div>
+      <div class="compare-col">
+        <div class="compare-label builder">Builder API (verbose)</div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-lang">rust</span></div>
+          <pre><span class="ty">Command</span><span class="op">::</span><span class="fn_">new</span><span class="op">(</span><span class="st">"app"</span><span class="op">)</span>
+  <span class="op">.</span><span class="fn_">arg</span><span class="op">(</span><span class="ty">Arg</span><span class="op">::</span><span class="fn_">new</span><span class="op">(</span><span class="st">"port"</span><span class="op">)</span>
+    <span class="op">.</span><span class="fn_">short</span><span class="op">(</span><span class="st">'p'</span><span class="op">)</span>
+    <span class="op">.</span><span class="fn_">long</span><span class="op">(</span><span class="st">"port"</span><span class="op">)</span>
+    <span class="op">.</span><span class="fn_">default_value</span><span class="op">(</span><span class="st">"8080"</span><span class="op">)</span>
+    <span class="op">.</span><span class="fn_">value_parser</span><span class="op">(</span>
+      <span class="fn_">clap_value_parser!</span><span class="op">(</span><span class="ty">u16</span><span class="op">)))</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <p>The Builder API gives you more runtime flexibility (dynamic commands) but most CLIs don't need that. Stick with Derive.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════ ARGS -->
+  <section class="section" id="args">
+    <div class="section-eyebrow">Chapter 4</div>
+    <h2>Arguments, Options, and Flags</h2>
+
+    <p>
+      These three are the core building blocks of any CLI. The difference is
+      <strong>how they're spelled on the command line</strong>.
+    </p>
+
+    <table>
+      <tr><th>Kind</th><th>Example on CLI</th><th>How it looks in struct</th></tr>
+      <tr>
+        <td><strong>Positional argument</strong></td>
+        <td><code>myapp foo.txt</code></td>
+        <td>Plain field, no <code>#[arg]</code> needed</td>
+      </tr>
+      <tr>
+        <td><strong>Option</strong> (named, takes value)</td>
+        <td><code>myapp --output out.txt</code></td>
+        <td><code>#[arg(short, long)]</code> on non-bool field</td>
+      </tr>
+      <tr>
+        <td><strong>Flag</strong> (named, no value)</td>
+        <td><code>myapp --verbose</code></td>
+        <td><code>#[arg(short, long)]</code> on a <code>bool</code> field</td>
+      </tr>
+    </table>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">rust</span>
+        <span class="code-filename">src/main.rs — all three kinds</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="kw">use</span> clap<span class="op">::</span><span class="ty">Parser</span><span class="op">;</span>
+<span class="kw">use</span> std<span class="op">::</span>path<span class="op">::</span><span class="ty">PathBuf</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser, Debug)]</span>
+<span class="at">#[command(about = "File processor")]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Input file (positional argument)</span>
+    input<span class="op">:</span> <span class="ty">PathBuf</span><span class="op">,</span>
+
+    <span class="cm">/// Output file (option: --output or -o)</span>
+    <span class="at">#[arg(short, long)]</span>
+    output<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">PathBuf</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// Print extra info (flag: --verbose or -v)</span>
+    <span class="at">#[arg(short, long)]</span>
+    verbose<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> args <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+
+    <span class="kw">if</span> args.verbose <span class="op">{</span>
+        <span class="mc">println!</span><span class="op">(</span><span class="st">"Input: {:?}"</span><span class="op">,</span> args.input<span class="op">);</span>
+    <span class="op">}</span>
+
+    <span class="kw">match</span> args.output <span class="op">{</span>
+        <span class="ty">Some</span><span class="op">(</span>path<span class="op">)</span> <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"Writing to {:?}"</span><span class="op">,</span> path<span class="op">),</span>
+        <span class="ty">None</span>       <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"Writing to stdout"</span><span class="op">),</span>
+    <span class="op">}</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">cargo run -- input.txt -v --output out.txt</span><br/>
+      <span class="out">Input: "input.txt"</span><br/>
+      <span class="out">Writing to "out.txt"</span>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">short vs long</div>
+      <p><code>#[arg(short)]</code> = use first letter of field name as <code>-x</code> flag.
+      <code>#[arg(long)]</code> = use full field name as <code>--field-name</code>.
+      You can override: <code>#[arg(short = 'O', long = "out")]</code>.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ OPTIONS -->
+  <section class="section" id="options">
+    <div class="section-eyebrow">Chapter 5</div>
+    <h2>Options &amp; Flags — Deep Dive</h2>
+
+    <h3>Counting flags (e.g. <code>-vvv</code>)</h3>
+    <p>Use <code>action = ArgAction::Count</code> to count how many times a flag appears.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> clap<span class="op">::{</span><span class="ty">Parser</span><span class="op">,</span> ArgAction<span class="op">};</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Verbosity (-v = info, -vv = debug, -vvv = trace)</span>
+    <span class="at">#[arg(short, long, action = ArgAction::Count)]</span>
+    verbose<span class="op">:</span> <span class="ty">u8</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> args <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="mc">println!</span><span class="op">(</span><span class="st">"verbosity level: {}"</span><span class="op">,</span> args.verbose<span class="op">);</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp -vvv</span><br/>
+      <span class="out">verbosity level: 3</span>
+    </div>
+
+    <h3>Negatable flags (<code>--flag / --no-flag</code>)</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Enable colors (default: on). Use --no-color to disable.</span>
+    <span class="at">#[arg(long, default_value_t = true, action = clap::ArgAction::Set)]</span>
+    color<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --no-color</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ TYPES -->
+  <section class="section" id="types">
+    <div class="section-eyebrow">Chapter 6</div>
+    <h2>Parsing into Rust Types</h2>
+
+    <p>
+      clap uses the <code>ValueParser</code> trait under the hood.
+      For most standard types, it Just Works™ because they implement <code>FromStr</code>.
+    </p>
+
+    <table>
+      <tr><th>Rust type</th><th>CLI input</th><th>Notes</th></tr>
+      <tr><td><code>String</code></td><td><code>--name foo</code></td><td>Any text</td></tr>
+      <tr><td><code>u8, u32, i64, f64</code></td><td><code>--port 8080</code></td><td>Auto-parsed, error if invalid</td></tr>
+      <tr><td><code>bool</code></td><td>flag present/absent</td><td>See flags section</td></tr>
+      <tr><td><code>PathBuf</code></td><td><code>--input ./foo.txt</code></td><td>OS path</td></tr>
+      <tr><td><code>Option&lt;T&gt;</code></td><td>omit the flag entirely</td><td>None if not provided</td></tr>
+      <tr><td><code>Vec&lt;T&gt;</code></td><td><code>--tag a --tag b</code></td><td>Multiple values</td></tr>
+      <tr><td>Custom enum (ValueEnum)</td><td><code>--format json</code></td><td>Covered in ValueEnum section</td></tr>
+    </table>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> std<span class="op">::</span>net<span class="op">::</span><span class="ty">IpAddr</span><span class="op">;</span>
+<span class="kw">use</span> std<span class="op">::</span>path<span class="op">::</span><span class="ty">PathBuf</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser, Debug)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Port to listen on</span>
+    <span class="at">#[arg(short, long, default_value_t = 3000)]</span>
+    port<span class="op">:</span> <span class="ty">u16</span><span class="op">,</span>
+
+    <span class="cm">/// Bind address</span>
+    <span class="at">#[arg(long, default_value = "127.0.0.1")]</span>
+    host<span class="op">:</span> <span class="ty">IpAddr</span><span class="op">,</span>
+
+    <span class="cm">/// Config file path</span>
+    <span class="at">#[arg(short, long)]</span>
+    config<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">PathBuf</span><span class="op">&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">default_value_t vs default_value</div>
+      <p>Use <code>default_value_t = 3000</code> when your type is not a string (u16, bool, etc.).
+      Use <code>default_value = "text"</code> for strings. Mixing them causes compile errors.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ REQUIRED -->
+  <section class="section" id="required">
+    <div class="section-eyebrow">Chapter 7</div>
+    <h2>Required &amp; Optional Arguments</h2>
+
+    <p>The type of your field determines whether the argument is required:</p>
+
+    <table>
+      <tr><th>Field type</th><th>Behavior</th></tr>
+      <tr><td><code>String</code>, <code>u32</code>, etc.</td><td>Required — clap errors if missing</td></tr>
+      <tr><td><code>Option&lt;T&gt;</code></td><td>Optional — <code>None</code> if not provided</td></tr>
+      <tr><td><code>bool</code> (flag)</td><td>Optional — <code>false</code> if not provided</td></tr>
+      <tr><td>Has <code>default_value</code></td><td>Optional — uses default</td></tr>
+    </table>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Required: must be provided</span>
+    name<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+
+    <span class="cm">/// Optional: fine to omit</span>
+    <span class="at">#[arg(short, long)]</span>
+    nickname<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// Optional with default</span>
+    <span class="at">#[arg(short, long, default_value_t = 42)]</span>
+    count<span class="op">:</span> <span class="ty">u32</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Making an option required</div>
+      <p>You can force a named option to be required even if you'd normally use <code>Option&lt;T&gt;</code>:
+      add <code>#[arg(required = true)]</code>. But usually just use <code>T</code> (non-option) instead.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ DEFAULTS -->
+  <section class="section" id="defaults">
+    <div class="section-eyebrow">Chapter 8</div>
+    <h2>Default Values</h2>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// String default</span>
+    <span class="at">#[arg(long, default_value = "world")]</span>
+    name<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+
+    <span class="cm">/// Numeric default — note _t suffix means "typed"</span>
+    <span class="at">#[arg(long, default_value_t = 8080)]</span>
+    port<span class="op">:</span> <span class="ty">u16</span><span class="op">,</span>
+
+    <span class="cm">/// Boolean default</span>
+    <span class="at">#[arg(long, default_value_t = true)]</span>
+    color<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+
+    <span class="cm">/// Computed default using a function</span>
+    <span class="at">#[arg(long, default_value_t = default_threads())]</span>
+    threads<span class="op">:</span> <span class="ty">usize</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">default_threads</span><span class="op">() -&gt;</span> <span class="ty">usize</span> <span class="op">{</span>
+    std<span class="op">::</span>thread<span class="op">::</span><span class="fn_">available_parallelism</span><span class="op">()</span>
+        <span class="op">.</span><span class="fn_">map</span><span class="op">(|</span>n<span class="op">|</span> n<span class="op">.</span><span class="fn_">get</span><span class="op">())</span>
+        <span class="op">.</span><span class="fn_">unwrap_or</span><span class="op">(</span><span class="nu">4</span><span class="op">)</span>
+<span class="op">}</span></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ SUBCOMMANDS -->
+  <section class="section" id="subcommands">
+    <div class="section-eyebrow">Chapter 9</div>
+    <h2>Subcommands</h2>
+
+    <p>
+      Subcommands let you build CLIs like <code>git</code> where the first argument
+      picks an operation (<code>git add</code>, <code>git commit</code>, <code>git push</code>).
+      In clap, subcommands are <strong>enum variants</strong>.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">rust</span>
+        <span class="code-filename">src/main.rs</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="kw">use</span> clap<span class="op">::{</span><span class="ty">Parser</span><span class="op">,</span> <span class="ty">Subcommand</span><span class="op">};</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="at">#[command(about = "A task manager")]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="at">#[command(subcommand)]</span>
+    command<span class="op">:</span> <span class="ty">Commands</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="at">#[derive(Subcommand)]</span>
+<span class="kw">enum</span> <span class="ty">Commands</span> <span class="op">{</span>
+    <span class="cm">/// Add a new task</span>
+    Add <span class="op">{</span>
+        <span class="cm">/// Task description</span>
+        description<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+        <span class="cm">/// Priority level</span>
+        <span class="at">#[arg(short, long, default_value_t = 1)]</span>
+        priority<span class="op">:</span> <span class="ty">u8</span><span class="op">,</span>
+    <span class="op">},</span>
+    <span class="cm">/// List all tasks</span>
+    List <span class="op">{</span>
+        <span class="cm">/// Show only done tasks</span>
+        <span class="at">#[arg(long)]</span>
+        done<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+    <span class="op">},</span>
+    <span class="cm">/// Remove a task by ID</span>
+    Remove <span class="op">{</span>
+        id<span class="op">:</span> <span class="ty">u64</span><span class="op">,</span>
+    <span class="op">},</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+
+    <span class="kw">match</span> cli.command <span class="op">{</span>
+        <span class="ty">Commands</span><span class="op">::</span>Add <span class="op">{</span> description<span class="op">,</span> priority <span class="op">}</span> <span class="op">=&gt; {</span>
+            <span class="mc">println!</span><span class="op">(</span><span class="st">"Adding task: '{}' (priority {})"</span><span class="op">,</span> description<span class="op">,</span> priority<span class="op">);</span>
+        <span class="op">}</span>
+        <span class="ty">Commands</span><span class="op">::</span>List <span class="op">{</span> done <span class="op">}</span> <span class="op">=&gt; {</span>
+            <span class="mc">println!</span><span class="op">(</span><span class="st">"Listing {} tasks"</span><span class="op">,</span> <span class="kw">if</span> done <span class="op">{</span> <span class="st">"done"</span> <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span> <span class="st">"all"</span> <span class="op">});</span>
+        <span class="op">}</span>
+        <span class="ty">Commands</span><span class="op">::</span>Remove <span class="op">{</span> id <span class="op">}</span> <span class="op">=&gt; {</span>
+            <span class="mc">println!</span><span class="op">(</span><span class="st">"Removing task {}"</span><span class="op">,</span> id<span class="op">);</span>
+        <span class="op">}</span>
+    <span class="op">}</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./tasks add "buy milk" --priority 2</span><br/>
+      <span class="out">Adding task: 'buy milk' (priority 2)</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">./tasks list --done</span><br/>
+      <span class="out">Listing done tasks</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">./tasks --help</span><br/>
+      <span class="out">A task manager</span><br/>
+      <span class="out">Usage: tasks &lt;COMMAND&gt;</span><br/>
+      <span class="out">Commands:</span><br/>
+      <span class="out">  add     Add a new task</span><br/>
+      <span class="out">  list    List all tasks</span><br/>
+      <span class="out">  remove  Remove a task by ID</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ REQUIRED SUBCOMMANDS -->
+  <section class="section" id="subcommand-required">
+    <div class="section-eyebrow">Chapter 10</div>
+    <h2>Required Subcommands &amp; Optional Subcommands</h2>
+
+    <p>By default, subcommands are required. Make them optional with <code>Option&lt;Commands&gt;</code>:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Optional: running with no subcommand shows status</span>
+    <span class="at">#[command(subcommand)]</span>
+    command<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">Commands</span><span class="op">&gt;,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="kw">match</span> cli.command <span class="op">{</span>
+        <span class="ty">Some</span><span class="op">(</span>cmd<span class="op">)</span> <span class="op">=&gt;</span> <span class="fn_">run_command</span><span class="op">(</span>cmd<span class="op">),</span>
+        <span class="ty">None</span>      <span class="op">=&gt;</span> <span class="fn_">show_status</span><span class="op">(),</span>
+    <span class="op">}</span>
+<span class="op">}</span></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ GLOBAL ARGS -->
+  <section class="section" id="global-args">
+    <div class="section-eyebrow">Chapter 11</div>
+    <h2>Global Arguments</h2>
+
+    <p>
+      A <strong>global argument</strong> is available to all subcommands.
+      Add <code>#[arg(global = true)]</code> to the top-level struct.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Available in ALL subcommands</span>
+    <span class="at">#[arg(global = true, short, long)]</span>
+    verbose<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+
+    <span class="at">#[command(subcommand)]</span>
+    command<span class="op">:</span> <span class="ty">Commands</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --verbose list</span><span class="out">  ← global flag before subcommand</span><br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp list --verbose</span><span class="out">  ← global flag after subcommand (both work!)</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ VALIDATION -->
+  <section class="section" id="validation">
+    <div class="section-eyebrow">Chapter 12</div>
+    <h2>Built-in Validation</h2>
+
+    <p>Use <code>#[arg(value_parser = ...)]</code> to constrain accepted values.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Port must be 1024–65535</span>
+    <span class="at">#[arg(long, value_parser = clap::value_parser!(u16).range(1024..=65535))]</span>
+    port<span class="op">:</span> <span class="ty">u16</span><span class="op">,</span>
+
+    <span class="cm">/// Number of workers: 1–16</span>
+    <span class="at">#[arg(long, value_parser = clap::value_parser!(u8).range(1..=16))]</span>
+    workers<span class="op">:</span> <span class="ty">u8</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./server --port 80</span><br/>
+      <span class="err">error: invalid value '80' for '--port &lt;PORT&gt;': 80 is not in 1024..=65535</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ CUSTOM VALIDATORS -->
+  <section class="section" id="custom-val">
+    <div class="section-eyebrow">Chapter 13</div>
+    <h2>Custom Validators</h2>
+
+    <p>Write any function <code>fn(&amp;str) -&gt; Result&lt;T, E&gt;</code> and pass it to <code>value_parser</code>.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">fn</span> <span class="fn_">parse_key_val</span><span class="op">(</span>s<span class="op">: &amp;</span><span class="ty">str</span><span class="op">) -&gt;</span> <span class="ty">Result</span><span class="op">&lt;(</span><span class="ty">String</span><span class="op">,</span> <span class="ty">String</span><span class="op">),</span> <span class="ty">String</span><span class="op">&gt; {</span>
+    s<span class="op">.</span><span class="fn_">split_once</span><span class="op">(</span><span class="st">'='</span><span class="op">)</span>
+     <span class="op">.</span><span class="fn_">map</span><span class="op">(|(</span>k<span class="op">,</span> v<span class="op">)| (</span>k<span class="op">.</span><span class="fn_">to_string</span><span class="op">(),</span> v<span class="op">.</span><span class="fn_">to_string</span><span class="op">()))</span>
+     <span class="op">.</span><span class="fn_">ok_or_else</span><span class="op">(||</span> <span class="mc">format!</span><span class="op">(</span><span class="st">"expected KEY=VALUE, got '{s}'"</span><span class="op">))</span>
+<span class="op">}</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Extra headers as KEY=VALUE</span>
+    <span class="at">#[arg(long, value_parser = parse_key_val)]</span>
+    header<span class="op">:</span> <span class="ty">Vec</span><span class="op">&lt;(</span><span class="ty">String</span><span class="op">,</span> <span class="ty">String</span><span class="op">)&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --header Content-Type=json --header X-Token=abc123</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ CONFLICTS -->
+  <section class="section" id="conflicts">
+    <div class="section-eyebrow">Chapter 14</div>
+    <h2>Conflicts &amp; Requires</h2>
+
+    <p>Encode logical relationships between arguments so clap validates them automatically.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Quiet mode (conflicts with --verbose)</span>
+    <span class="at">#[arg(long, conflicts_with = "verbose")]</span>
+    quiet<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+
+    <span class="cm">/// Verbose mode (conflicts with --quiet)</span>
+    <span class="at">#[arg(long, conflicts_with = "quiet")]</span>
+    verbose<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span>
+
+    <span class="cm">/// Output file (requires --format)</span>
+    <span class="at">#[arg(long, requires = "format")]</span>
+    output<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// Output format (required if --output is set)</span>
+    <span class="at">#[arg(long)]</span>
+    format<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --quiet --verbose</span><br/>
+      <span class="err">error: the argument '--quiet' cannot be used with '--verbose'</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp --output result.txt</span><span class="out">  ← missing --format</span><br/>
+      <span class="err">error: the following required arguments were not provided: --format &lt;FORMAT&gt;</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ VALUE ENUM -->
+  <section class="section" id="value-enum">
+    <div class="section-eyebrow">Chapter 15</div>
+    <h2>ValueEnum — Restrict to Known Values</h2>
+
+    <p>
+      Use <code>#[derive(ValueEnum)]</code> on an enum to restrict an argument to
+      a fixed set of values. clap generates the valid options list in help text automatically.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> clap<span class="op">::{</span><span class="ty">Parser</span><span class="op">,</span> <span class="ty">ValueEnum</span><span class="op">};</span>
+
+<span class="at">#[derive(ValueEnum, Clone, Debug)]</span>
+<span class="kw">enum</span> <span class="ty">OutputFormat</span> <span class="op">{</span>
+    Json<span class="op">,</span>
+    Toml<span class="op">,</span>
+    Yaml<span class="op">,</span>
+    <span class="at">#[value(name = "plain-text")]</span>  <span class="cm">// custom CLI name</span>
+    PlainText<span class="op">,</span>
+<span class="op">}</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Output format [json, toml, yaml, plain-text]</span>
+    <span class="at">#[arg(short, long, value_enum, default_value_t = OutputFormat::Json)]</span>
+    format<span class="op">:</span> <span class="ty">OutputFormat</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> args <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="kw">match</span> args.format <span class="op">{</span>
+        <span class="ty">OutputFormat</span><span class="op">::</span>Json      <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"outputting JSON"</span><span class="op">),</span>
+        <span class="ty">OutputFormat</span><span class="op">::</span>Toml      <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"outputting TOML"</span><span class="op">),</span>
+        <span class="ty">OutputFormat</span><span class="op">::</span>Yaml      <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"outputting YAML"</span><span class="op">),</span>
+        <span class="ty">OutputFormat</span><span class="op">::</span>PlainText <span class="op">=&gt;</span> <span class="mc">println!</span><span class="op">(</span><span class="st">"outputting plain text"</span><span class="op">),</span>
+    <span class="op">}</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --format toml</span><br/>
+      <span class="out">outputting TOML</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp --format xml</span><br/>
+      <span class="err">error: invalid value 'xml' for '--format &lt;FORMAT&gt;'</span><br/>
+      <span class="err">  [possible values: json, toml, yaml, plain-text]</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ ENV VARS -->
+  <section class="section" id="env-vars">
+    <div class="section-eyebrow">Chapter 16</div>
+    <h2>Environment Variables</h2>
+
+    <p>
+      Add <code>features = ["env"]</code> to your Cargo.toml, then use
+      <code>#[arg(env = "VAR_NAME")]</code>. CLI flags take precedence over env vars.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">toml</span>
+        <span class="code-filename">Cargo.toml</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre>clap = <span class="op">{</span> version = <span class="st">"4"</span><span class="op">,</span> features = <span class="op">[</span><span class="st">"derive"</span><span class="op">,</span> <span class="st">"env"</span><span class="op">]</span> <span class="op">}</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Database URL — reads $DATABASE_URL if not set on CLI</span>
+    <span class="at">#[arg(long, env = "DATABASE_URL")]</span>
+    database_url<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+
+    <span class="cm">/// API key — hides value in help output</span>
+    <span class="at">#[arg(long, env = "API_KEY", hide_env_values = true)]</span>
+    api_key<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">DATABASE_URL=postgres://localhost/db ./myapp</span><br/>
+      <span class="cm"># No --database-url needed — reads from env</span><br/>
+      <br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp --database-url postgres://prod/db</span><br/>
+      <span class="cm"># CLI flag overrides env var</span>
+    </div>
+
+    <p>Help output shows where a value came from:</p>
+    <div class="term">
+      <span class="out">  --database-url &lt;DATABASE_URL&gt;  [env: DATABASE_URL=postgres://localhost/db]</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ CONFIG FILES -->
+  <section class="section" id="config-file">
+    <div class="section-eyebrow">Chapter 17</div>
+    <h2>Config Files (via clap + figment / config)</h2>
+
+    <p>
+      clap alone doesn't read config files — but it pairs well with <code>figment</code> or
+      <code>config-rs</code>. The pattern: parse the config path with clap, then load it yourself.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-lang">rust</span>
+        <span class="code-filename">Config file pattern</span>
+        <button class="code-copy" onclick="copyCode(this)">copy</button>
+      </div>
+      <pre><span class="kw">use</span> clap<span class="op">::</span><span class="ty">Parser</span><span class="op">;</span>
+<span class="kw">use</span> std<span class="op">::</span>path<span class="op">::</span><span class="ty">PathBuf</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Path to config file</span>
+    <span class="at">#[arg(long, default_value = "config.toml")]</span>
+    config<span class="op">:</span> <span class="ty">PathBuf</span><span class="op">,</span>
+
+    <span class="cm">/// Override port from config</span>
+    <span class="at">#[arg(long)]</span>
+    port<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">u16</span><span class="op">&gt;,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="kw">let</span> file_config <span class="op">=</span> <span class="fn_">load_toml</span><span class="op">(&</span>cli.config<span class="op">);</span>
+
+    <span class="cm">// CLI takes precedence over file config</span>
+    <span class="kw">let</span> port <span class="op">=</span> cli.port<span class="op">.</span><span class="fn_">unwrap_or</span><span class="op">(</span>file_config.port<span class="op">);</span>
+    <span class="mc">println!</span><span class="op">(</span><span class="st">"Using port: {port}"</span><span class="op">);</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-label">Typical precedence chain</div>
+      <p>CLI flags → environment variables → config file → hardcoded defaults.
+      This is the standard Unix convention and what users expect.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ MULTIPLE VALUES -->
+  <section class="section" id="multiple">
+    <div class="section-eyebrow">Chapter 18</div>
+    <h2>Multiple Values</h2>
+
+    <p>Three ways to accept multiple values for one argument:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// 1. Repeated flags: --tag a --tag b --tag c</span>
+    <span class="at">#[arg(long)]</span>
+    tag<span class="op">:</span> <span class="ty">Vec</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// 2. Space-separated after flag: --file a.txt b.txt c.txt</span>
+    <span class="at">#[arg(long, num_args = 1..)]</span>
+    file<span class="op">:</span> <span class="ty">Vec</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// 3. Exactly N values: --coords 10 20</span>
+    <span class="at">#[arg(long, num_args = 2)]</span>
+    coords<span class="op">:</span> <span class="ty">Vec</span><span class="op">&lt;</span><span class="ty">f64</span><span class="op">&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp --tag rust --tag cli --tag cool</span><br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp --file a.txt b.txt c.txt</span><br/>
+      <span class="prompt">$</span> <span class="cmd">./myapp --coords 12.5 -3.7</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ GROUPS -->
+  <section class="section" id="groups">
+    <div class="section-eyebrow">Chapter 19</div>
+    <h2>Argument Groups</h2>
+
+    <p>
+      Argument groups let you say "exactly one of these must be provided" or
+      "at most one of these can be provided" across multiple arguments.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> clap<span class="op">::{</span><span class="ty">Parser</span><span class="op">,</span> <span class="ty">ArgGroup</span><span class="op">};</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="at">#[command(group(</span>
+    <span class="ty">ArgGroup</span><span class="op">::</span><span class="fn_">new</span><span class="op">(</span><span class="st">"auth"</span><span class="op">)</span>
+        <span class="op">.</span><span class="fn_">required</span><span class="op">(</span><span class="kw">true</span><span class="op">)</span>       <span class="cm">// one of these must be given</span>
+        <span class="op">.</span><span class="fn_">args</span><span class="op">([</span><span class="st">"api_key"</span><span class="op">,</span> <span class="st">"token"</span><span class="op">])</span>
+<span class="op">))]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Authenticate with API key</span>
+    <span class="at">#[arg(long)]</span>
+    api_key<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+
+    <span class="cm">/// Authenticate with bearer token</span>
+    <span class="at">#[arg(long)]</span>
+    token<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">String</span><span class="op">&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="term">
+      <span class="prompt">$</span> <span class="cmd">./myapp</span><br/>
+      <span class="err">error: the following required arguments were not provided:</span><br/>
+      <span class="err">  &lt;--api-key &lt;API_KEY&gt;|--token &lt;TOKEN&gt;&gt;</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ HELP -->
+  <section class="section" id="help">
+    <div class="section-eyebrow">Chapter 20</div>
+    <h2>Custom Help &amp; Version</h2>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> clap<span class="op">::</span><span class="ty">Parser</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="at">#[command(</span>
+    name = <span class="st">"myapp"</span><span class="op">,</span>
+    version = <span class="st">"1.2.0"</span><span class="op">,</span>             <span class="cm">// or env!("CARGO_PKG_VERSION")</span>
+    author = <span class="st">"Irshad &lt;me@example.com&gt;"</span><span class="op">,</span>
+    about = <span class="st">"Does awesome things"</span><span class="op">,</span>
+    long_about = <span class="st">"A longer description shown with --help but not -h"</span><span class="op">,</span>
+    after_help = <span class="st">"EXAMPLES:\n  myapp --port 3000\n  myapp list --verbose"</span><span class="op">,</span>
+<span class="op">)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="at">#[arg(short, long)]</span>
+    port<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">u16</span><span class="op">&gt;,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <h3>Use <code>env!("CARGO_PKG_VERSION")</code> for auto version</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[command(version = env!("CARGO_PKG_VERSION"))]</span></pre>
+    </div>
+
+    <p>This reads the version from <code>Cargo.toml</code> at compile time. You never need to update it manually.</p>
+
+    <h3>Hiding arguments from help</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[arg(long, hide = true)]</span>   <span class="cm">// hidden from --help output</span>
+debug_mode<span class="op">:</span> <span class="ty">bool</span><span class="op">,</span></pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ ERROR HANDLING -->
+  <section class="section" id="errors">
+    <div class="section-eyebrow">Chapter 21</div>
+    <h2>Error Handling</h2>
+
+    <p>
+      <code>Cli::parse()</code> exits on error. If you want to handle errors yourself
+      (e.g. in tests, or for custom error formatting), use <code>Cli::try_parse()</code>.
+    </p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">try_parse</span><span class="op">().</span><span class="fn_">unwrap_or_else</span><span class="op">(|</span>e<span class="op">| {</span>
+        <span class="cm">// e.kind() lets you check the error type</span>
+        <span class="mc">eprintln!</span><span class="op">(</span><span class="st">"Error: {e}"</span><span class="op">);</span>
+        std<span class="op">::</span>process<span class="op">::</span><span class="fn_">exit</span><span class="op">(</span><span class="nu">1</span><span class="op">);</span>
+    <span class="op">});</span>
+
+    <span class="cm">// Or use the built-in pretty exit:</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">try_parse</span><span class="op">().</span><span class="fn_">unwrap_or_else</span><span class="op">(|</span>e<span class="op">|</span> e<span class="op">.</span><span class="fn_">exit</span><span class="op">());</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <h3>Testing your CLI</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[test]</span>
+<span class="kw">fn</span> <span class="fn_">test_defaults</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse_from</span><span class="op">([</span><span class="st">"myapp"</span><span class="op">]);</span>  <span class="cm">// inject args</span>
+    <span class="mc">assert_eq!</span><span class="op">(</span>cli.port<span class="op">,</span> <span class="nu">8080</span><span class="op">);</span>
+<span class="op">}</span>
+
+<span class="at">#[test]</span>
+<span class="kw">fn</span> <span class="fn_">test_invalid_port</span><span class="op">() {</span>
+    <span class="kw">let</span> result <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">try_parse_from</span><span class="op">([</span><span class="st">"myapp"</span><span class="op">,</span> <span class="st">"--port"</span><span class="op">,</span> <span class="st">"99999"</span><span class="op">]);</span>
+    <span class="mc">assert!</span><span class="op">(</span>result<span class="op">.</span><span class="fn_">is_err</span><span class="op">());</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Always test your CLI</div>
+      <p>Use <code>parse_from</code> and <code>try_parse_from</code> in unit tests.
+      They accept anything that iterates over strings — no need for integration tests just to check argument parsing.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════ CHEATSHEET -->
+  <section class="section" id="cheatsheet">
+    <div class="section-eyebrow">Reference</div>
+    <h2>Cheatsheet</h2>
+
+    <h3>#[command(...)] attributes</h3>
+    <table>
+      <tr><th>Attribute</th><th>Effect</th></tr>
+      <tr><td><code>name = "myapp"</code></td><td>Binary name in usage</td></tr>
+      <tr><td><code>about = "..."</code></td><td>Short description (-h)</td></tr>
+      <tr><td><code>long_about = "..."</code></td><td>Long description (--help)</td></tr>
+      <tr><td><code>version = "1.0.0"</code></td><td>Version for -V / --version</td></tr>
+      <tr><td><code>author = "..."</code></td><td>Author in --help</td></tr>
+      <tr><td><code>after_help = "..."</code></td><td>Text after options in help</td></tr>
+      <tr><td><code>subcommand_required = true</code></td><td>Error if no subcommand given</td></tr>
+      <tr><td><code>propagate_version = true</code></td><td>Pass -V to subcommands</td></tr>
+    </table>
+
+    <h3>#[arg(...)] attributes</h3>
+    <table>
+      <tr><th>Attribute</th><th>Effect</th></tr>
+      <tr><td><code>short</code></td><td>Enable -x short flag (auto first letter)</td></tr>
+      <tr><td><code>long</code></td><td>Enable --field-name long flag</td></tr>
+      <tr><td><code>short = 'X'</code></td><td>Custom short flag letter</td></tr>
+      <tr><td><code>long = "alias"</code></td><td>Custom long flag name</td></tr>
+      <tr><td><code>default_value = "str"</code></td><td>Default for String types</td></tr>
+      <tr><td><code>default_value_t = val</code></td><td>Default for non-string types</td></tr>
+      <tr><td><code>required = true</code></td><td>Force required even if Option&lt;T&gt;</td></tr>
+      <tr><td><code>env = "VAR"</code></td><td>Read from env var as fallback</td></tr>
+      <tr><td><code>value_enum</code></td><td>Use ValueEnum for validation</td></tr>
+      <tr><td><code>num_args = 1..</code></td><td>Accept 1+ values</td></tr>
+      <tr><td><code>value_delimiter = ','</code></td><td>Split on delimiter: a,b,c</td></tr>
+      <tr><td><code>conflicts_with = "other"</code></td><td>Mutually exclusive with other arg</td></tr>
+      <tr><td><code>requires = "other"</code></td><td>This arg requires other arg</td></tr>
+      <tr><td><code>global = true</code></td><td>Inherited by all subcommands</td></tr>
+      <tr><td><code>hide = true</code></td><td>Hidden from help output</td></tr>
+      <tr><td><code>action = ArgAction::Count</code></td><td>Count occurrences (-vvv → 3)</td></tr>
+      <tr><td><code>alias = "other-name"</code></td><td>Accept alternate flag name</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════════════ PATTERNS -->
+  <section class="section" id="patterns">
+    <div class="section-eyebrow">Reference</div>
+    <h2>Real-world Patterns</h2>
+
+    <h3>Pattern 1: Git-style tool (global flags + subcommands)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="at">#[command(name = "mytool", version, propagate_version = true)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="at">#[arg(global = true, long, action = ArgAction::Count)]</span>
+    verbose<span class="op">:</span> <span class="ty">u8</span><span class="op">,</span>
+
+    <span class="at">#[arg(global = true, long, default_value = "config.toml")]</span>
+    config<span class="op">:</span> <span class="ty">PathBuf</span><span class="op">,</span>
+
+    <span class="at">#[command(subcommand)]</span>
+    command<span class="op">:</span> <span class="ty">Commands</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <h3>Pattern 2: Server with env + CLI precedence</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">ServerCli</span> <span class="op">{</span>
+    <span class="at">#[arg(long, env = "PORT", default_value_t = 8080)]</span>
+    port<span class="op">:</span> <span class="ty">u16</span><span class="op">,</span>
+
+    <span class="at">#[arg(long, env = "DATABASE_URL")]</span>
+    database_url<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+
+    <span class="at">#[arg(long, env = "RUST_LOG", default_value = "info")]</span>
+    log_level<span class="op">:</span> <span class="ty">String</span><span class="op">,</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <h3>Pattern 3: Pipe-friendly CLI (stdin or file)</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">rust</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="kw">use</span> std<span class="op">::</span>io<span class="op">::{</span>self<span class="op">,</span> <span class="ty">Read</span><span class="op">};</span>
+<span class="kw">use</span> std<span class="op">::</span>path<span class="op">::</span><span class="ty">PathBuf</span><span class="op">;</span>
+
+<span class="at">#[derive(Parser)]</span>
+<span class="kw">struct</span> <span class="ty">Cli</span> <span class="op">{</span>
+    <span class="cm">/// Input file. Reads stdin if omitted.</span>
+    input<span class="op">:</span> <span class="ty">Option</span><span class="op">&lt;</span><span class="ty">PathBuf</span><span class="op">&gt;,</span>
+<span class="op">}</span>
+
+<span class="kw">fn</span> <span class="fn_">main</span><span class="op">() {</span>
+    <span class="kw">let</span> cli <span class="op">=</span> <span class="ty">Cli</span><span class="op">::</span><span class="fn_">parse</span><span class="op">();</span>
+    <span class="kw">let</span> content <span class="op">=</span> <span class="kw">match</span> cli.input <span class="op">{</span>
+        <span class="ty">Some</span><span class="op">(</span>path<span class="op">)</span> <span class="op">=&gt;</span> std<span class="op">::</span>fs<span class="op">::</span><span class="fn_">read_to_string</span><span class="op">(</span>path<span class="op">).</span><span class="fn_">unwrap</span><span class="op">(),</span>
+        <span class="ty">None</span> <span class="op">=&gt; {</span>
+            <span class="kw">let mut</span> buf <span class="op">=</span> <span class="ty">String</span><span class="op">::</span><span class="fn_">new</span><span class="op">();</span>
+            io<span class="op">::</span><span class="fn_">stdin</span><span class="op">().</span><span class="fn_">read_to_string</span><span class="op">(&mut</span> buf<span class="op">).</span><span class="fn_">unwrap</span><span class="op">();</span>
+            buf
+        <span class="op">}</span>
+    <span class="op">};</span>
+    <span class="cm">// process content...</span>
+<span class="op">}</span></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">You're ready</div>
+      <p>These patterns cover 95% of real CLIs. The official docs at
+      <strong>docs.rs/clap</strong> are excellent for edge cases — but you now have
+      the mental model to read them without confusion.</p>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// Copy button
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// Active nav + progress bar
+const sections = document.querySelectorAll('.section');
+const navItems = document.querySelectorAll('.nav-item');
+const bar = document.getElementById('progressBar');
+
+function updateNav() {
+  const scrollY = window.scrollY;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = Math.min(100, (scrollY / docH) * 100) + '%';
+
+  let current = '';
+  sections.forEach(s => {
+    if (scrollY >= s.offsetTop - 80) current = s.id;
+  });
+
+  navItems.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+}
+
+window.addEventListener('scroll', updateNav, { passive: true });
+updateNav();
+</script>
+</body>
+</html>
