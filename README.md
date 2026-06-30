@@ -23,7 +23,7 @@ The tutorial is a single `.html` file you open in any browser. No server, no
 internet required after download.
 
 ```
-clap-tutorial.html
+index.html
 ```
 
 ### Layout
