@@ -147,4 +147,15 @@ the wild, then set aside.
 
 ---
 
+## Warning
+
+I used AI as a learning assistant to explain concepts I found difficult in the official documentation, then verified examples and behavior against the official clap documentation and by running the code myself.
+
+---
+
+## Help
+
+If you find any mistakes or outdated information, please open an issue or submit a pull request.
+---
+
 *Built as a learning companion. Not affiliated with the clap project.*
